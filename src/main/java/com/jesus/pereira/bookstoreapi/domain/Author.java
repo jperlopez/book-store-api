@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -37,5 +38,5 @@ public class Author {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private Set<Book> books;
+    private List<Book> books;
 }
