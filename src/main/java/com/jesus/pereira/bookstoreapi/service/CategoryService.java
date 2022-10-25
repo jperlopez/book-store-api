@@ -11,9 +11,9 @@ public interface CategoryService {
 
     List<Category> findAllCategories();
 
-    Category findCategoryByName(Long name);
+    Category findCategoryByName(String name);
 
-    List<Category> findCategoriesByNameLike(Long name);
+    List<Category> findCategoriesByNameLike(String name);
 
     Category createCategory(Category category);
 

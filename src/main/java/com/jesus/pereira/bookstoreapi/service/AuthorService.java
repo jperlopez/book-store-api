@@ -11,15 +11,15 @@ public interface AuthorService {
 
     List<Author> findAllAuthors();
 
-    Author findAuthorByName(Long name);
+    Author findAuthorByName(String name);
 
-    List<Author> findAuthorsByNameLike(Long name);
+    List<Author> findAuthorsByNameLike(String name);
 
     Author createAuthor(Author author);
 
-    Author updateCategory(Author author);
+    Author updateAuthor(Author author);
 
-    void deleteCategory();
+    void deleteAuthor();
 
 
 }
