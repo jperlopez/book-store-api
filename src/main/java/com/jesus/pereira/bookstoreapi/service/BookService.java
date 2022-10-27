@@ -10,19 +10,20 @@ public interface BookService {
 
     Book findBookById(Long id);
 
-    List<Book> findAllBooks();
+    Book findBookByName(String name);
 
-    Book findBookByName(Long name);
+    List<Book> findBooksByNameLike(String name);
 
-    List<Book> findBooksByNameLike(Long name);
+    List<Book> findBooksByAuthorId(Long authorId);
 
-    List<Book> findBooksByAuthor (Author author);
+    List<Book> findBooksByCategoryId(Long categoryId);
 
-    List<Book> findBooksByCategory(Category category);
-
+    //TODO: Should we use nested resources or instead a DTO containing author id and category???s
     Book createBook(Book bookToPersist, Long categoryId, Long authorId);
 
     Book updateBook(Book bookToPersist, Long bookId);
 
     void deleteCategory();
+
+    List<Book> findByCategoryId(Long id);
 }

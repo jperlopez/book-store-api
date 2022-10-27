@@ -1,9 +1,7 @@
 package com.jesus.pereira.bookstoreapi.service;
 
-import com.jesus.pereira.bookstoreapi.domain.Author;
 import com.jesus.pereira.bookstoreapi.domain.Category;
 import com.jesus.pereira.bookstoreapi.exception.NoSuchElementExistsException;
-import com.jesus.pereira.bookstoreapi.repository.AuthorRepository;
 import com.jesus.pereira.bookstoreapi.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,7 +98,6 @@ public class CategoryServiceTest {
         List<Category> categoryList = new ArrayList<>();
         categoryList.add(category1);
         categoryList.add(category2);
-        categoryList.add(category3);
 
         given(categoryRepository.findByNameContainingIgnoreCase(name)).willReturn(categoryList);
         List<Category> retrievedCategories = categoryService.findCategoriesByNameLike(name);
