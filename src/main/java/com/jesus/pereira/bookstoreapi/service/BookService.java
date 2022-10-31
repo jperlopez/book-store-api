@@ -1,8 +1,8 @@
 package com.jesus.pereira.bookstoreapi.service;
 
-import com.jesus.pereira.bookstoreapi.domain.Author;
 import com.jesus.pereira.bookstoreapi.domain.Book;
-import com.jesus.pereira.bookstoreapi.domain.Category;
+import com.jesus.pereira.bookstoreapi.resource.dto.BookDTO;
+
 
 import java.util.List;
 
@@ -18,12 +18,11 @@ public interface BookService {
 
     List<Book> findBooksByCategoryId(Long categoryId);
 
-    //TODO: Should we use nested resources or instead a DTO containing author id and category???s
-    Book createBook(Book bookToPersist, Long categoryId, Long authorId);
+    Book createBook(BookDTO bookRequest);
 
-    Book updateBook(Book bookToPersist, Long bookId);
+    Book updateBook(BookDTO bookRequest, Long bookId);
 
-    void deleteCategory();
+    void deleteBook(Long bookId);
 
     List<Book> findByCategoryId(Long id);
 }

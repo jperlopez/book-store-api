@@ -24,11 +24,8 @@ public class Category {
     private Long id;
 
     @Column(name = "name")
-    @Size(min = 1, max = 45)
-    @NotNull
     private String name;
 
-    @Size(min = 1, max = 100)
     @Column(name = "description")
     private String description;
 

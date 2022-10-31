@@ -112,7 +112,7 @@ public class BookRepositoryTest {
         entityManager.persistAndFlush(book1);
         entityManager.persistAndFlush(book2);
 
-        List<Book> booksRetrieved = bookRepository.findByAuthor(author);
+        List<Book> booksRetrieved = bookRepository.findByAuthorId(author.getId());
 
         assertThat(booksRetrieved).size().isEqualTo(2);
 

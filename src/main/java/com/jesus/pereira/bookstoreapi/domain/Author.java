@@ -25,12 +25,9 @@ public class Author {
     private Long id;
 
     @Column(name = "name")
-    @Size(min = 1, max = 45)
-    @NotNull
     private String name;
 
     @Column(name = "surname")
-    @Size(min = 1, max = 45)
     private String surname;
 
     @OneToMany(
