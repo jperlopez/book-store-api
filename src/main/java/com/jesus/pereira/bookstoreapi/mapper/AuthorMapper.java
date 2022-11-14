@@ -1,0 +1,17 @@
+package com.jesus.pereira.bookstoreapi.mapper;
+
+import com.jesus.pereira.bookstoreapi.domain.Author;
+import com.jesus.pereira.bookstoreapi.resource.dto.AuthorDTO;
+import org.mapstruct.Mapper;
+
+@Mapper(
+        componentModel = "spring"
+)
+public interface AuthorMapper {
+
+    AuthorDTO toAuthorDto(Author author);
+
+    Author toAuthor(AuthorDTO authorDTO);
+
+    Author toAuthorUpdate(AuthorDTO authorDTO, Long id);
+}
