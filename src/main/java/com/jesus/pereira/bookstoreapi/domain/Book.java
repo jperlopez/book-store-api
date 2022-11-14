@@ -1,7 +1,6 @@
 package com.jesus.pereira.bookstoreapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
@@ -32,32 +31,21 @@ public class Book {
     private Long id;
 
     @Column(name = "name")
-    @Size(min = 1, max = 45)
-    @NotNull
     private String name;
 
     @Column(name = "description")
-    @Size(min = 1, max = 100)
     private String description;
 
     @Column(name = "prize")
-    @Digits(integer = 5, fraction = 2)
-    @NotNull
     private BigDecimal prize;
 
     @Column(name = "pages")
-    @Digits(integer = 4, fraction = 0)
     private int pages;
 
     @Column(name = "creation_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime creationDate;
 
     @Column(name = "update_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updateDate;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -24,12 +25,9 @@ public class Author {
     private Long id;
 
     @Column(name = "name")
-    @Size(min = 1, max = 45)
-    @NotNull
     private String name;
 
     @Column(name = "surname")
-    @Size(min = 1, max = 45)
     private String surname;
 
     @OneToMany(
@@ -37,5 +35,5 @@ public class Author {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private Set<Book> books;
+    private List<Book> books;
 }
