@@ -84,6 +84,16 @@ public class AuthorRepositoryTest {
     }
 
     @Test
+    void shouldReturnAuthorByNameAndSurname() {
+        Author authorToPersist = entityManager.persistAndFlush(author1);
+        Author authorRetrieved = authorRepository.findByNameAndSurnameIgnoreCase("Author1", "Test1").orElse(null);
+
+        assertThat(authorRetrieved).isNotNull();
+        assertThat(authorRetrieved).usingRecursiveComparison()
+                .isEqualTo(authorToPersist);
+    }
+
+    @Test
     void shouldReturnAuthorsByNameLike() {
         List<Author> authorList = new ArrayList<>();
         Author author3 = Author.builder()

@@ -1,8 +1,12 @@
 package com.jesus.pereira.bookstoreapi.service;
 
 import com.jesus.pereira.bookstoreapi.domain.Author;
+import com.jesus.pereira.bookstoreapi.exception.AuthorAlreadyExistsException;
 import com.jesus.pereira.bookstoreapi.exception.NoSuchElementExistsException;
+import com.jesus.pereira.bookstoreapi.mapper.AuthorMapper;
 import com.jesus.pereira.bookstoreapi.repository.AuthorRepository;
+import com.jesus.pereira.bookstoreapi.resource.dto.AuthorDTO;
+import com.jesus.pereira.bookstoreapi.service.impl.AuthorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +22,6 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,8 +31,11 @@ public class AuthorServiceTest {
     @Mock
     AuthorRepository authorRepository;
 
+    @Mock
+    AuthorMapper authorMapper;
+
     @InjectMocks
-    AuthorService authorService;
+    AuthorServiceImpl authorService;
 
     private Author author1;
     private Author author2;
@@ -61,7 +67,7 @@ public class AuthorServiceTest {
         given(authorRepository.findById(id)).willReturn(Optional.of(author1));
         Author retrievedAuthor = authorService.findAuthorById(id);
 
-        verify(authorRepository.findById(any()), times(1));
+        verify(authorRepository, times(1)).findById(any());
         assertThat(retrievedAuthor).isNotNull();
         assertThat(retrievedAuthor).usingRecursiveComparison().isEqualTo(author1);
     }
@@ -77,7 +83,7 @@ public class AuthorServiceTest {
         given(authorRepository.findAll()).willReturn(authorList);
         List<Author> retrievedAuthors = authorService.findAllAuthors();
 
-        verify(authorRepository.findAll(), times(1));
+        verify(authorRepository, times(1)).findAll();
         assertThat(retrievedAuthors).isNotEmpty();
         assertThat(retrievedAuthors).containsAll(authorList);
     }
@@ -88,10 +94,11 @@ public class AuthorServiceTest {
         given(authorRepository.findByNameIgnoreCase(author1.getName())).willReturn(Optional.of(author1));
         Author retrievedAuthor = authorService.findAuthorByName(author1.getName());
 
-        verify(authorRepository.findByNameIgnoreCase(any()), times(1));
+        verify(authorRepository, times(1)).findByNameIgnoreCase(any());
         assertThat(retrievedAuthor).isNotNull();
         assertThat(retrievedAuthor).usingRecursiveComparison().isEqualTo(author1);
     }
+
 
     @Test
     void givenNameShouldReturnAllAuthorsWithNameLike() {
@@ -100,28 +107,33 @@ public class AuthorServiceTest {
         List<Author> authorList = new ArrayList<>();
         authorList.add(author1);
         authorList.add(author2);
-        authorList.add(author3);
 
         given(authorRepository.findByNameContainingIgnoreCase(name)).willReturn(authorList);
         List<Author> retrievedAuthors = authorService.findAuthorsByNameLike(name);
 
-        verify(authorRepository.findAll(), times(1));
         assertThat(retrievedAuthors).isNotEmpty();
         assertThat(retrievedAuthors).size().isEqualTo(2);
     }
 
     @Test
     void givenSaveRequestShouldSaveAuthor() {
+        AuthorDTO authorDTO = AuthorDTO.builder()
+                .name("AuthorDTO")
+                .surname("Test4")
+                .build();
         Author authorToPersist = Author.builder()
-                .name("Author")
-                .surname("Test1")
+                .name("AuthorDTO")
+                .surname("Test4")
                 .build();
 
+        given(authorRepository.findByNameAndSurnameIgnoreCase(authorDTO.getName(), authorDTO.getSurname()))
+                .willReturn(Optional.empty());
+        given(authorMapper.toAuthor(authorDTO)).willReturn(authorToPersist);
         given(authorRepository.save(authorToPersist)).willAnswer(
                 invocationOnMock -> invocationOnMock.getArgument(0));
-        Author authorPersisted = authorService.createAuthor(authorToPersist);
+        Author authorPersisted = authorService.createAuthor(authorDTO);
 
-        verify(authorRepository.save(any()), times(1));
+        verify(authorRepository, times(1)).save(any());
         assertThat(authorPersisted).isNotNull();
         assertThat(authorPersisted).usingRecursiveComparison()
                 .ignoringFields("id")
@@ -130,15 +142,29 @@ public class AuthorServiceTest {
 
     @Test
     void givenUpdateRequestAndIdShouldUpdateAuthor() {
+
         final Long id = 1L;
-        author1.setId(id);
-        given(authorRepository.findById(id)).willReturn(Optional.of(author1));
 
-        final Author authorUpdated = authorService.updateAuthor(author1);
+        AuthorDTO authorDTO = AuthorDTO.builder()
+                .name("AuthorDTO")
+                .surname("Test4")
+                .build();
+        Author authorToPersist = Author.builder()
+                .id(1L)
+                .name("AuthorDTO")
+                .surname("Test4")
+                .build();
 
-        verify(authorRepository.findById(any()), times(1));
-        verify(authorRepository.save(any()), times(1));
-        assertThat(authorUpdated).usingRecursiveComparison().isEqualTo(author1);
+        given(authorMapper.toAuthorUpdate(authorDTO, id)).willReturn(authorToPersist);
+        given(authorRepository.findById(id)).willReturn(Optional.of(authorToPersist));
+        given(authorRepository.save(authorToPersist)).willReturn(authorToPersist);
+
+        final Author authorUpdated = authorService.updateAuthor(authorDTO, id);
+
+        verify(authorRepository, times(1)).findById(any());
+        verify(authorRepository,times(1)).save(any());
+        assertThat(authorUpdated).usingRecursiveComparison().ignoringFields("id")
+                .isNotEqualTo(author1);
     }
 
     @Test
@@ -147,9 +173,9 @@ public class AuthorServiceTest {
         author1.setId(id);
         given(authorRepository.findById(id)).willReturn(Optional.of(author1));
 
-        authorService.deleteAuthor();
+        authorService.deleteAuthor(id);
 
-        verify(authorRepository.findById(any()), times(1));
+        verify(authorRepository, times(1)).findById(any());
         verify(authorRepository, times(1)).deleteById(1L);
     }
 
@@ -160,5 +186,18 @@ public class AuthorServiceTest {
 
         assertThatThrownBy(() -> authorService.findAuthorById(id))
                 .isInstanceOf(NoSuchElementExistsException.class);
+    }
+
+    @Test
+    void givenAnAuthorAlreadyExistsWhenSavingShouldThenShouldThrowException() {
+
+        AuthorDTO authorDTO = AuthorDTO.builder()
+                .name("AuthorDTO")
+                .surname("Test4")
+                .build();
+
+        given(authorRepository.findByNameAndSurnameIgnoreCase(any(), any())).willReturn(Optional.of(author1));
+        assertThatThrownBy(() -> authorService.createAuthor(authorDTO))
+                .isInstanceOf(AuthorAlreadyExistsException.class);
     }
 }

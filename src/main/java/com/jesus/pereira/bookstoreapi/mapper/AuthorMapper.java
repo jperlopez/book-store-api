@@ -11,5 +11,7 @@ public interface AuthorMapper {
 
     AuthorDTO toAuthorDto(Author author);
 
-    Author toAuthorDto(AuthorDTO authorDTO);
+    Author toAuthor(AuthorDTO authorDTO);
+
+    Author toAuthorUpdate(AuthorDTO authorDTO, Long id);
 }

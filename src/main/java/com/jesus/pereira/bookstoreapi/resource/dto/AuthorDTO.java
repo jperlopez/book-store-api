@@ -22,4 +22,5 @@ public class AuthorDTO {
 
     @Size(min = 1, max = 45)
     private String surname;
+    
 }

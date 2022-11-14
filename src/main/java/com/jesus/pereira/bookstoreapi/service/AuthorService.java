@@ -2,6 +2,7 @@ package com.jesus.pereira.bookstoreapi.service;
 
 import com.jesus.pereira.bookstoreapi.domain.Author;
 import com.jesus.pereira.bookstoreapi.domain.Category;
+import com.jesus.pereira.bookstoreapi.resource.dto.AuthorDTO;
 
 import java.util.List;
 
@@ -15,11 +16,11 @@ public interface AuthorService {
 
     List<Author> findAuthorsByNameLike(String name);
 
-    Author createAuthor(Author author);
+    Author createAuthor(AuthorDTO authorDTO);
 
-    Author updateAuthor(Author author);
+    Author updateAuthor(AuthorDTO authorDTO, Long id);
 
-    void deleteAuthor();
+    void deleteAuthor(Long authorId);
 
 
 }
