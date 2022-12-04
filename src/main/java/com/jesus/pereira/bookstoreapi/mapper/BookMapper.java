@@ -9,8 +9,10 @@ import org.mapstruct.Mapper;
         componentModel = "spring"
 )
 public interface BookMapper {
-
     Book toBook(BookDTO bookDTO);
 
     BookDTO toBookDto(Book book);
+
+    Book toBookUpdate(BookDTO bookDTO, Long id);
+
 }

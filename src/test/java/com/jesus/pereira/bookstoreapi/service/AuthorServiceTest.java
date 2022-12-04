@@ -89,18 +89,6 @@ public class AuthorServiceTest {
     }
 
     @Test
-    void givenNameShouldReturnAuthor() {
-
-        given(authorRepository.findByNameIgnoreCase(author1.getName())).willReturn(Optional.of(author1));
-        Author retrievedAuthor = authorService.findAuthorByName(author1.getName());
-
-        verify(authorRepository, times(1)).findByNameIgnoreCase(any());
-        assertThat(retrievedAuthor).isNotNull();
-        assertThat(retrievedAuthor).usingRecursiveComparison().isEqualTo(author1);
-    }
-
-
-    @Test
     void givenNameShouldReturnAllAuthorsWithNameLike() {
 
         String name = "aut";

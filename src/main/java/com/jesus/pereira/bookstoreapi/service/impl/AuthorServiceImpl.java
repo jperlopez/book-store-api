@@ -17,8 +17,8 @@ public class AuthorServiceImpl implements AuthorService {
     private static final String AUTHOR_ALREADY_EXISTS_EXCEPTION = "Author with name %1$s and surname %2$s";
     private static final String NO_SUCH_ELEMENT_EXISTS_EXCEPTION = "No author exists with id %s";
 
-    private AuthorRepository authorRepository;
-    private AuthorMapper authorMapper;
+    private final AuthorRepository authorRepository;
+    private final AuthorMapper authorMapper;
 
     public AuthorServiceImpl(AuthorRepository authorRepository, AuthorMapper authorMapper) {
         this.authorRepository = authorRepository;
@@ -34,11 +34,6 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<Author> findAllAuthors() {
         return authorRepository.findAll();
-    }
-
-    @Override
-    public Author findAuthorByName(String name) {
-        return authorRepository.findByNameIgnoreCase(name).orElseThrow(() -> new NoSuchElementExistsException("No author exists with name " + name));
     }
 
     @Override
