@@ -12,8 +12,6 @@ public interface AuthorService {
 
     List<Author> findAllAuthors();
 
-    Author findAuthorByName(String name);
-
     List<Author> findAuthorsByNameLike(String name);
 
     Author createAuthor(AuthorDTO authorDTO);
