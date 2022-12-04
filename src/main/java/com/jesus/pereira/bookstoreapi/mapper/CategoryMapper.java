@@ -12,4 +12,6 @@ public interface CategoryMapper {
     Category toCategory(CategoryDTO categoryDTO);
 
     CategoryDTO toCategoryDto(Category category);
+
+    Category toCategoryUpdate(CategoryDTO categoryDTO, Long id);
 }

@@ -10,7 +10,7 @@ public interface BookService {
 
     Book findBookById(Long id);
 
-    Book findBookByName(String name);
+    List<Book> findAllBooks();
 
     List<Book> findBooksByNameLike(String name);
 
@@ -24,5 +24,4 @@ public interface BookService {
 
     void deleteBook(Long bookId);
 
-    List<Book> findByCategoryId(Long id);
 }

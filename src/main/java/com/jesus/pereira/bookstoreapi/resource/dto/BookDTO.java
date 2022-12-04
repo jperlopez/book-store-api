@@ -39,7 +39,9 @@ public class BookDTO {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long categoryId;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY, namespace = "author")
     private AuthorDTO authorDTO;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY, namespace = "category")
     private CategoryDTO categoryDTO;
 }

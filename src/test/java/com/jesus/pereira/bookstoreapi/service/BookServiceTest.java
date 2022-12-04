@@ -4,13 +4,16 @@ package com.jesus.pereira.bookstoreapi.service;
 import com.jesus.pereira.bookstoreapi.domain.Author;
 import com.jesus.pereira.bookstoreapi.domain.Book;
 import com.jesus.pereira.bookstoreapi.domain.Category;
-import com.jesus.pereira.bookstoreapi.exception.AuthorAlreadyExistsException;
 import com.jesus.pereira.bookstoreapi.exception.BookAlreadyExistsException;
 import com.jesus.pereira.bookstoreapi.exception.NoSuchElementExistsException;
+import com.jesus.pereira.bookstoreapi.mapper.AuthorMapper;
+import com.jesus.pereira.bookstoreapi.mapper.BookMapper;
+import com.jesus.pereira.bookstoreapi.mapper.CategoryMapper;
 import com.jesus.pereira.bookstoreapi.repository.BookRepository;
 import com.jesus.pereira.bookstoreapi.resource.dto.AuthorDTO;
 import com.jesus.pereira.bookstoreapi.resource.dto.BookDTO;
 import com.jesus.pereira.bookstoreapi.resource.dto.CategoryDTO;
+import com.jesus.pereira.bookstoreapi.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +46,17 @@ public class BookServiceTest {
     @Mock
     AuthorService authorService;
 
+    @Mock
+    BookMapper bookMapper;
+
+    @Mock
+    CategoryMapper categoryMapper;
+
+    @Mock
+    AuthorMapper authorMapper;
+
     @InjectMocks
-    BookService bookService;
+    BookServiceImpl bookService;
 
     private static final Long bookId = 1L;
 
@@ -100,14 +112,6 @@ public class BookServiceTest {
                 .category(category)
                 .author(author)
                 .build();
-
-        authorDTO = AuthorDTO.builder()
-                .id(1L)
-                .build();
-
-        categoryDTO = CategoryDTO.builder()
-                .id(1L)
-                .build();
     }
 
     @Test
@@ -118,7 +122,7 @@ public class BookServiceTest {
         given(bookRepository.findById(bookId)).willReturn(Optional.of(book1));
         Book retrievedBook = bookService.findBookById(bookId);
 
-        verify(bookRepository.findById(any()), times(1));
+        verify(bookRepository, times(1)).findById(any());
         assertThat(retrievedBook).isNotNull();
         assertThat(retrievedBook).usingRecursiveComparison().isEqualTo(book1);
     }
@@ -134,7 +138,7 @@ public class BookServiceTest {
         given(bookRepository.findByAuthorId(author.getId())).willReturn(bookList);
         List<Book> retrievedBooks = bookService.findBooksByAuthorId(author.getId());
 
-        verify(bookRepository.findByAuthorId(any()), times(1));
+        verify(bookRepository, times(1)).findByAuthorId(any());
         assertThat(retrievedBooks).isNotEmpty();
         assertThat(retrievedBooks).containsAll(bookList);
     }
@@ -148,103 +152,128 @@ public class BookServiceTest {
         bookList.add(book3);
 
         given(bookRepository.findByCategoryId(category.getId())).willReturn(bookList);
-        List<Book> retrievedBooks = bookService.findByCategoryId(category.getId());
+        List<Book> retrievedBooks = bookService.findBooksByCategoryId(category.getId());
 
-        verify(bookRepository.findAll(), times(1));
+        verify(bookRepository, times(1)).findByCategoryId(1L);
         assertThat(retrievedBooks).isNotEmpty();
         assertThat(retrievedBooks).containsAll(bookList);
     }
 
 
     @Test
-    void givenNameShouldReturnBook() {
-
-        given(bookRepository.findByNameIgnoreCase(book1.getName())).willReturn(Optional.of(book1));
-        Book retrievedBook = bookService.findBookByName(book1.getName());
-
-        verify(bookRepository.findByNameIgnoreCase(any()), times(1));
-        assertThat(retrievedBook).isNotNull();
-        assertThat(retrievedBook).usingRecursiveComparison().isEqualTo(book1);
-    }
-
-    @Test
-    void givenNameShouldReturnAllAuthorsWithNameLike() {
-
-        String name = "boo";
-
-        List<Book> bookList = new ArrayList<>();
-        bookList.add(book1);
-        bookList.add(book2);
-
-        given(bookRepository.findByNameContainingIgnoreCase(name)).willReturn(bookList);
-        List<Book> retrievedBooks = bookService.findBooksByNameLike(name);
-
-        verify(bookRepository.findAll(), times(1));
-        assertThat(retrievedBooks).isNotEmpty();
-        assertThat(retrievedBooks).size().isEqualTo(2);
-    }
-
-    @Test
     void givenAuthorIdAndBookRequestShouldSaveBook() {
 
         BookDTO bookDto = BookDTO.builder()
-                .name("Book1")
+                .name("BookToPersist")
                 .description("First book")
                 .prize(new BigDecimal("39.99"))
                 .pages(100)
-                .authorId(author.getId())
-                .categoryId(category.getId())
-                .authorDTO(authorDTO)
-                .categoryDTO(categoryDTO)
+                .authorId(1L)
+                .categoryId(1L)
                 .build();
 
-        given(authorService.findAuthorById(bookDto.getAuthorId())).willReturn(author);
+        Book bookToPersist = Book.builder()
+                .id(1L)
+                .name("BookToPersist")
+                .description("First book")
+                .prize(new BigDecimal("39.99"))
+                .pages(100)
+                .author(author)
+                .category(category)
+                .build();
+
+        given(bookRepository.findByNameIgnoreCase(bookDto.getName())).willReturn(Optional.empty());
+        given(bookMapper.toBook(bookDto)).willReturn(bookToPersist);
+        given(authorService.findAuthorById(any())).willReturn(author);
+        given(categoryService.findCategoryById(any())).willReturn(category);
+        given(bookRepository.save(bookToPersist)).willAnswer(
+                invocationOnMock -> invocationOnMock.getArgument(0));
+
         Book createdBook = bookService.createBook(bookDto);
+
         assertThat(createdBook).isNotNull();
-        assertThat(createdBook).usingRecursiveComparison().isEqualTo(book1);
+        assertThat(createdBook).usingRecursiveComparison().isEqualTo(bookToPersist);
     }
 
     @Test
     void givenUpdateRequestShouldUpdateBook() {
         Long id = 1L;
+
         BookDTO bookDto = BookDTO.builder()
-                .name("Book1")
+                .name("BookToPersist")
                 .description("First book")
                 .prize(new BigDecimal("39.99"))
                 .pages(100)
-                .authorId(author.getId())
-                .categoryId(category.getId())
-                .authorDTO(authorDTO)
-                .categoryDTO(categoryDTO)
+                .authorId(1L)
+                .categoryId(1L)
                 .build();
 
-        given(bookRepository.save(book1)).willReturn(book1);
-        given(bookRepository.findById(id)).willReturn(Optional.ofNullable(book1));
+        Book bookToUpdate = Book.builder()
+                .id(1L)
+                .name("BookToPersist")
+                .description("First book")
+                .prize(new BigDecimal("39.99"))
+                .pages(100)
+                .author(author)
+                .category(category)
+                .creationDate(LocalDateTime.now())
+                .build();
+
+        given(bookRepository.findById(id)).willReturn(Optional.of(bookToUpdate));
+        given(bookMapper.toBookUpdate(bookDto, id)).willReturn(bookToUpdate);
+        given(authorService.findAuthorById(any())).willReturn(author);
+        given(categoryService.findCategoryById(any())).willReturn(category);
+        given(bookRepository.save(bookToUpdate)).willReturn(bookToUpdate);
 
         Book updatedBook = bookService.updateBook(bookDto, id);
 
-        verify(bookRepository.findById(any()), times(1));
-        verify(bookRepository.save(any()), times(1));
+        verify(bookRepository, times(1)).findById(any());
+        verify(bookRepository, times(1)).save(any());
 
         assertThat(updatedBook).isNotNull();
+        assertThat(updatedBook).usingRecursiveComparison()
+                .ignoringFields("updateDate")
+                .isEqualTo(bookToUpdate);
+        assertThat(updatedBook.getUpdateDate()).isNotNull();
     }
 
     @Test
     void givenBookIdShouldDeleteBook() {
 
+        BookDTO bookDto = BookDTO.builder()
+                .name("BookToPersist")
+                .description("First book")
+                .prize(new BigDecimal("39.99"))
+                .pages(100)
+                .authorId(1L)
+                .categoryId(1L)
+                .build();
+
+        Book bookToDelete = Book.builder()
+                .id(1L)
+                .name("BookToPersist")
+                .description("First book")
+                .prize(new BigDecimal("39.99"))
+                .pages(100)
+                .author(author)
+                .category(category)
+                .build();
+
         List<Book> bookList = new ArrayList<>();
-        bookList.add(book1);
-        bookList.add(book2);
+        bookList.add(bookToDelete);
         category.setBooks(bookList);
         author.setBooks(bookList);
 
+        given(bookRepository.findById(1L)).willReturn(Optional.ofNullable(bookToDelete));
         given(categoryService.findCategoryById(any())).willReturn(category);
         given(authorService.findAuthorById(any())).willReturn(author);
+        given(categoryMapper.toCategoryDto(category)).willReturn(categoryDTO);
+        given(authorMapper.toAuthorDto(author)).willReturn(authorDTO);
 
         bookService.deleteBook(bookId);
 
-        verify(categoryService.findCategoryById(any()), times(1));
-        verify(authorService.findAuthorById(any()), times(1));
+        verify(categoryService, times(1)).findCategoryById(any());
+        verify(authorService, times(1)).findAuthorById(any());
         verify(bookRepository, times(1)).deleteById(bookId);
     }
 
@@ -252,29 +281,5 @@ public class BookServiceTest {
     void givenBookIdWhichNotExistsShouldReturnException() {
         given(bookRepository.findById(1L)).willReturn(Optional.empty());
         assertThatThrownBy(() -> bookService.findBookById(1L)).isInstanceOf(NoSuchElementExistsException.class);
-    }
-
-    @Test
-    public void givenSaveRequestWhenBookNameAlreadyExistsThenSaveShouldThrowException() {
-
-        book1.setId(bookId);
-
-        BookDTO bookDto = BookDTO.builder()
-                .name("Book1")
-                .description("First book")
-                .prize(new BigDecimal("39.99"))
-                .pages(100)
-                .authorId(author.getId())
-                .categoryId(category.getId())
-                .authorDTO(authorDTO)
-                .categoryDTO(categoryDTO)
-                .build();
-
-        given(categoryService.findCategoryById(category.getId())).willReturn(category);
-        given(authorService.findAuthorById(author.getId())).willReturn(author);
-        given(bookRepository.findByNameIgnoreCase(book1.getName())).willReturn(Optional.ofNullable(book1));
-
-        assertThatThrownBy(() -> bookService.createBook(bookDto))
-                .isInstanceOf(BookAlreadyExistsException.class);
     }
 }

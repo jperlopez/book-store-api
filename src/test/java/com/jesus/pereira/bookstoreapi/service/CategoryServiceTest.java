@@ -2,7 +2,10 @@ package com.jesus.pereira.bookstoreapi.service;
 
 import com.jesus.pereira.bookstoreapi.domain.Category;
 import com.jesus.pereira.bookstoreapi.exception.NoSuchElementExistsException;
+import com.jesus.pereira.bookstoreapi.mapper.CategoryMapper;
 import com.jesus.pereira.bookstoreapi.repository.CategoryRepository;
+import com.jesus.pereira.bookstoreapi.resource.dto.CategoryDTO;
+import com.jesus.pereira.bookstoreapi.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +26,15 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
+
     @Mock
     CategoryRepository categoryRepository;
 
+    @Mock
+    CategoryMapper categoryMapper;
+
     @InjectMocks
-    CategoryService categoryService;
+    CategoryServiceImpl categoryService;
 
     private Category category1;
     private Category category2;
@@ -52,20 +59,20 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void givenAnIdShouldReturnAnAuthor() {
+    void givenAnIdShouldReturnCategory() {
         Long id = 1L;
         category1.setId(1L);
 
         given(categoryRepository.findById(id)).willReturn(Optional.of(category1));
         Category retrievedCategory = categoryService.findCategoryById(id);
 
-        verify(categoryRepository.findById(any()), times(1));
+        verify(categoryRepository, times(1)).findById(any());
         assertThat(retrievedCategory).isNotNull();
         assertThat(retrievedCategory).usingRecursiveComparison().isEqualTo(category1);
     }
 
     @Test
-    void givenSearchRequestShouldReturnAllAuthors() {
+    void givenSearchRequestShouldReturnAllCategories() {
 
         List<Category> categoryList = new ArrayList<>();
         categoryList.add(category1);
@@ -75,24 +82,13 @@ public class CategoryServiceTest {
         given(categoryRepository.findAll()).willReturn(categoryList);
         List<Category> retrievedAuthors = categoryService.findAllCategories();
 
-        verify(categoryRepository.findAll(), times(1));
+        verify(categoryRepository, times(1)).findAll();
         assertThat(retrievedAuthors).isNotEmpty();
         assertThat(retrievedAuthors).containsAll(categoryList);
     }
 
     @Test
-    void givenNameShouldReturnAuthor() {
-
-        given(categoryRepository.findByNameIgnoreCase(category1.getName())).willReturn(Optional.of(category1));
-        Category retrievedCategory = categoryService.findCategoryByName(category1.getName());
-
-        verify(categoryRepository.findByNameIgnoreCase(any()), times(1));
-        assertThat(retrievedCategory).isNotNull();
-        assertThat(retrievedCategory).usingRecursiveComparison().isEqualTo(category1);
-    }
-
-    @Test
-    void givenNameShouldReturnAllAuthorsWithNameLike() {
+    void givenNameShouldReturnAllCategoriesWithNameLike() {
 
         String name = "cat";
         List<Category> categoryList = new ArrayList<>();
@@ -102,23 +98,33 @@ public class CategoryServiceTest {
         given(categoryRepository.findByNameContainingIgnoreCase(name)).willReturn(categoryList);
         List<Category> retrievedCategories = categoryService.findCategoriesByNameLike(name);
 
-        verify(categoryRepository.findAll(), times(1));
+        verify(categoryRepository, times(1)).findByNameContainingIgnoreCase(any());
         assertThat(retrievedCategories).isNotEmpty();
         assertThat(retrievedCategories).size().isEqualTo(2);
     }
 
     @Test
-    void givenSaveRequestShouldSaveAuthor() {
-        Category categoryToPersist = Category.builder()
+    void givenSaveRequestShouldSaveCategory() {
+
+        CategoryDTO categoryDto = CategoryDTO.builder()
                 .name("Category")
-                .description("Test1")
+                .description("Test4")
                 .build();
 
+        Category categoryToPersist = Category.builder()
+                .name("Category")
+                .description("Test5")
+                .build();
+
+
+        given(categoryRepository.findByNameIgnoreCase(categoryDto.getName())).willReturn(Optional.empty());
+        given(categoryMapper.toCategory(categoryDto)).willReturn(categoryToPersist);
         given(categoryRepository.save(categoryToPersist)).willAnswer(
                 invocationOnMock -> invocationOnMock.getArgument(0));
-        Category categoryPersisted = categoryService.createCategory(categoryToPersist);
 
-        verify(categoryRepository.save(any()), times(1));
+        Category categoryPersisted = categoryService.createCategory(categoryDto);
+
+        verify(categoryRepository, times(1)).save(any());
         assertThat(categoryPersisted).isNotNull();
         assertThat(categoryPersisted).usingRecursiveComparison()
                 .ignoringFields("id")
@@ -128,14 +134,27 @@ public class CategoryServiceTest {
     @Test
     void givenUpdateRequestAndIdShouldUpdateAuthor() {
         final Long id = 1L;
-        category1.setId(id);
-        given(categoryRepository.findById(id)).willReturn(Optional.of(category1));
 
-        final Category categoryUpdated = categoryService.updateCategory(category1, id);
+        CategoryDTO categoryDto = CategoryDTO.builder()
+                .name("Category")
+                .description("Test4")
+                .build();
 
-        verify(categoryRepository.findById(any()), times(1));
-        verify(categoryRepository.save(any()), times(1));
-        assertThat(categoryUpdated).usingRecursiveComparison().isEqualTo(category1);
+        Category categoryToPersist = Category.builder()
+                .id(1L)
+                .name("Category")
+                .description("Test4")
+                .build();
+
+        given(categoryMapper.toCategoryUpdate(categoryDto, id)).willReturn(categoryToPersist);
+        given(categoryRepository.findById(id)).willReturn(Optional.of(categoryToPersist));
+        given(categoryRepository.save(categoryToPersist)).willReturn(categoryToPersist);
+
+        final Category categoryUpdated = categoryService.updateCategory(categoryDto, id);
+
+        verify(categoryRepository, times(1)).findById(any());
+        verify(categoryRepository, times(1)).save(any());
+        assertThat(categoryUpdated).usingRecursiveComparison().isEqualTo(categoryToPersist);
     }
 
     @Test
@@ -144,9 +163,9 @@ public class CategoryServiceTest {
         category2.setId(id);
         given(categoryRepository.findById(id)).willReturn(Optional.of(category1));
 
-        categoryService.deleteCategory();
+       categoryService.deleteCategory(id);
 
-        verify(categoryRepository.findById(any()), times(1));
+        verify(categoryRepository, times(1)).findById(any());
         verify(categoryRepository, times(1)).deleteById(1L);
     }
 

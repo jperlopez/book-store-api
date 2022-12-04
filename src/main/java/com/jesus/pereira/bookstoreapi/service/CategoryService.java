@@ -1,8 +1,10 @@
 package com.jesus.pereira.bookstoreapi.service;
 
 import com.jesus.pereira.bookstoreapi.domain.Category;
+import com.jesus.pereira.bookstoreapi.resource.dto.CategoryDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface CategoryService {
@@ -11,15 +13,13 @@ public interface CategoryService {
 
     List<Category> findAllCategories();
 
-    Category findCategoryByName(String name);
-
     List<Category> findCategoriesByNameLike(String name);
 
-    Category createCategory(Category category);
+    Category createCategory(CategoryDTO categoryDTO);
 
-    Category updateCategory(Category category, Long categoryId);
+    Category updateCategory(CategoryDTO categoryDTO, Long categoryId);
 
-    void deleteCategory();
+    void deleteCategory(Long categoryId);
 
 
 }
